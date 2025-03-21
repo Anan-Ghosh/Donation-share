@@ -1,0 +1,64 @@
+.env# Bytecode and cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
+
+# Virtual environment
+venv/
+.env
+.envrc
+*.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# PostgreSQL and database files
+*.sqlite3
+*.db
+*.sql
+pgdata/
+pg_log/
+
+# Flask session files
+instance/
+flask_session/
+.flaskenv
+*.session
+
+# Logs and debugging files
+logs/
+*.log
+debug.log
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.iml
+
+# Node.js / React frontend
+book-review-frontend/node_modules/
+book-review-frontend/build/
+book-review-frontend/.parcel-cache/
+book-review-frontend/.eslintcache
+book-review-frontend/yarn.lock
+book-review-frontend/package-lock.json
+book-review-frontend/.turbo/
+book-review-frontend/.next/
+book-review-frontend/.nuxt/
+book-review-frontend/dist/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Compiled C extensions
+*.so
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# OS-specific files
+.DS_Store
+Thumbs.db
