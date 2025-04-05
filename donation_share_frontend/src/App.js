@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { ToastContainer } from "react-toastify";
 import AuthPage from "./pages/Auth";
