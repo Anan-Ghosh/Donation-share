@@ -1,4 +1,6 @@
 /*Primary : #FF3008*/
+/*Component_bg : #18212d*/
+/*Dark Text : #526484*/
 
 body {
     background: #101924;
@@ -13,4 +15,11 @@ body {
     background-repeat: repeat-y;
     color: #ffffff;
     font-family: "Inter", serif;
+}
+
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+    filter: invert(100%) hue-rotate(150deg) brightness(95%) contrast(90%);
 }

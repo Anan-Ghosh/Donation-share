@@ -20,22 +20,25 @@ function getColorFromName(name) {
     return colors[index];
 }
 
-const Provider = ({ name, donationNo }) => {
+const Provider = ({ name, email, donationNo }) => {
     const initial = name ? name.charAt(0).toUpperCase() : "?";
     const bgColor = getColorFromName(name);
     return (
-        <div className="flex flex-row border-2 pb-4 border-b-slate-500 justify-between items-center">
-            <div>
+        <div className="flex flex-row pb-4 my-4 text-white justify-between items-center">
+            <div className="flex flex-row">
                 <div
                     className={`flex items-center justify-center rounded-full h-12 w-12 ${bgColor} text-white font-semibold text-md`}
                 >
                     {initial}
                 </div>
-                <p className="ml-2 text-xl">{name}</p>
+                <div className="flex flex-col ml-4">
+                    <p className="text-xl">{name}</p>
+                    <span className="text-sm text-slate-400">{email}</span>
+                </div>
             </div>
             <div className="">
                 <p>
-                    <strong>{donationNo} </strong> donations
+                    <strong className="text-3xl text-[#FF3008]">{donationNo} </strong> donations
                 </p>
             </div>
         </div>
