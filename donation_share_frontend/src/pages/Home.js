@@ -1,16 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import DataCard from "../components/DataCard";
 import Provider from "../components/Provider";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+
 import { FaPlus } from "react-icons/fa";
 import { MdAccountCircle } from "react-icons/md";
 import { FaHandHoldingHeart } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import { FaSmile } from "react-icons/fa";
 import LineChart from "../components/Chart";
+import Map from "../components/Map";
+import DonationForm from "../components/DonationForm";
 
 const Home = () => {
+    const [modalIsOpen, setIsOpen] = useState(false);
+
+    const scrollToMap = () => {
+        window.scroll({
+            top: document.body.scrollHeight,
+            behavior: "smooth",
+        });
+    };
+
     return (
         <div className="container mx-auto md:px-22 my-12">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -19,16 +29,23 @@ const Home = () => {
                     <span className="mt-1 text-[#526484]">Welcome to your donation dashboard</span>
                 </div>
                 <div classname="">
-                    <button className="cursor-pointer rounded bg-[#18212d] px-6 p-1 text-[#526484] hover:bg-white hover:text-black transition mx-5 border border-[#526484]">
+                    <button
+                        onClick={() => setIsOpen(true)}
+                        className="cursor-pointer rounded bg-[#18212d] px-6 p-1 text-[#526484] hover:bg-white hover:text-black transition mx-5 border border-[#526484]"
+                    >
                         <div className="flex flex-row items-center ">
                             <FaPlus /> <span className="ml-2">Donate</span>
                         </div>
                     </button>
-                    <button className="cursor-pointer rounded bg-[#FF3008] px-6 p-1 text-white">
+                    <button
+                        onClick={() => scrollToMap()}
+                        className="cursor-pointer rounded bg-[#FF3008] px-6 p-1 text-white"
+                    >
                         <span>Beneficiary</span>{" "}
                     </button>
                 </div>
             </div>
+            <DonationForm modalIsOpen={modalIsOpen} setIsOpen={setIsOpen} />
             <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 lg:grid-cols-4 gap-4 my-14">
                 <DataCard number={56} title={"Number of Donations"} color={"#09c2de"}>
                     {" "}
@@ -60,17 +77,8 @@ const Home = () => {
                     </div>
                 </div>
             </div>
-            <div className="mt-12 rounded-xl overflow-hidden border border-[#18212d] w-full h-180">
-                <MapContainer center={[51.05, -114.07]} zoom={11} style={{ height: "100%", width: "100%" }}>
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-
-                    <Marker position={[51.05, -114.07]}>
-                        <Popup></Popup>
-                    </Marker>
-                </MapContainer>
+            <div id="map" className="mt-12 rounded-xl overflow-hidden border border-[#18212d] w-full h-180">
+                <Map />
             </div>
         </div>
     );

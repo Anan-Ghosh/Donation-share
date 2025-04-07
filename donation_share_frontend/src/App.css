@@ -23,3 +23,32 @@ body {
 .leaflet-control-attribution {
     filter: invert(100%) hue-rotate(150deg) brightness(95%) contrast(90%);
 }
+
+.pulse {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: #ff3008;
+    border-radius: 50%;
+    animation: pulse-beat 1.5s infinite;
+}
+
+.booked_donation {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: blue;
+    border-radius: 50%;
+}
+
+@keyframes pulse-beat {
+    0% {
+        box-shadow: 0 0 0 0 #ff3008;
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+    }
+}
