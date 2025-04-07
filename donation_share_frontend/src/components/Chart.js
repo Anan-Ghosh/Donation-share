@@ -12,41 +12,55 @@ import { Line } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export const options = {
+const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
         legend: {
-            position: "top",
+            labels: {
+                color: "#fff",
+            },
         },
-        title: {
-            display: true,
-            text: "Chart.js Line Chart",
+        tooltip: {
+            backgroundColor: "#333",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+        },
+    },
+    scales: {
+        y: {
+            ticks: {
+                color: "#ccc",
+            },
+            grid: {
+                color: "rgba(255, 255, 255, 0.1)",
+            },
         },
     },
 };
 
-const labels = ["January", "February", "March", "April", "May", "June", "July"];
-
-export const data = {
-    labels,
+const data = {
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
         {
-            label: "Dataset 1",
-            data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
-            borderColor: "rgb(255, 99, 132)",
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-        },
-        {
-            label: "Dataset 2",
-            data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
-            borderColor: "rgb(53, 162, 235)",
-            backgroundColor: "rgba(53, 162, 235, 0.5)",
+            label: "Sales",
+            data: [120, 190, 300, 250, 320, 400],
+            borderColor: "rgba(75,192,192,1)",
+            backgroundColor: "rgba(75,192,192,0.2)",
+            fill: true,
+            tension: 0.4,
+            pointBorderColor: "#fff",
+            pointBackgroundColor: "rgba(75,192,192,1)",
         },
     ],
 };
 
 const LineChart = () => {
-    return <Line options={options} data={data} />;
+    return (
+        <div className="bg-[#18212d] p-6 rounded-2xl shadow-lg h-[600px] w-full">
+            <Line options={options} data={data} />{" "}
+        </div>
+    );
 };
 
 export default LineChart;

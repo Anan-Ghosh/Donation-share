@@ -8,12 +8,13 @@ import { MdAccountCircle } from "react-icons/md";
 import { FaHandHoldingHeart } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import { FaSmile } from "react-icons/fa";
+import LineChart from "../components/Chart";
 
 const Home = () => {
     return (
-        <div className="container mx-auto px-22 my-12">
-            <div className="flex flex-row justify-between items-center">
-                <div className="flex flex-col ">
+        <div className="container mx-auto md:px-22 my-12">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+                <div className="flex flex-col mb-8 md:mb-0">
                     <h2 className="text-white text-3xl">Welcome Name</h2>
                     <span className="mt-1 text-[#526484]">Welcome to your donation dashboard</span>
                 </div>
@@ -28,7 +29,7 @@ const Home = () => {
                     </button>
                 </div>
             </div>
-            <div className="flex flex-row justify-between items-center my-14">
+            <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 lg:grid-cols-4 gap-4 my-14">
                 <DataCard number={56} title={"Number of Donations"} color={"#09c2de"}>
                     {" "}
                     <FaHandHoldingHeart size={85} className="relative top-1 left-0" />
@@ -44,8 +45,10 @@ const Home = () => {
                     <FaSmile size={85} className="relative top-5 left-5" />
                 </DataCard>
             </div>
-            <div className="grid grid-cols-3">
-                <div></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                    <LineChart />
+                </div>
                 <div className="flex flex-col rounded-xl p-6 bg-[#18212d]">
                     <h2 className="text-white text-xl mb-4">Top Providers</h2>
                     <div className="flex flex-col divide-y divide-[#526484]">
