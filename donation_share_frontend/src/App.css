@@ -52,3 +52,7 @@ body {
         box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
     }
 }
+
+.leaflet-routing-container {
+    display: none !important;
+}
