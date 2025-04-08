@@ -5,18 +5,17 @@ import { Route, Routes } from "react-router";
 import Home from "./pages/Home";
 import "leaflet/dist/leaflet.css";
 import DonationDetail from "./pages/DonationDetail";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
     return (
         <div className="App">
             <Routes>
                 <Route path="/auth" element={<AuthPage />} />
-                <Route path="/" element={<Home />} />
-                <Route path="/donation" element={<DonationDetail />} />
-                {/* <Route element={<PrivateRoute />}>
+                <Route element={<PrivateRoute />}>
                     <Route path="/" element={<Home />} />
-                    <Route path="book/:id" element={<BookDetail />} />
-                </Route> */}
+                    <Route path="/donation" element={<DonationDetail />} />
+                </Route>
             </Routes>
             <ToastContainer />
         </div>

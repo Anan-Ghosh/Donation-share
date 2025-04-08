@@ -13,6 +13,8 @@ import DonationForm from "../components/DonationForm";
 
 const Home = () => {
     const [modalIsOpen, setIsOpen] = useState(false);
+    let user = localStorage.getItem("user");
+    const user_parsed = JSON.parse(user);
 
     const scrollToMap = () => {
         window.scroll({
@@ -25,7 +27,7 @@ const Home = () => {
         <div className="container mx-auto md:px-22 my-12">
             <div className="flex flex-col md:flex-row justify-between items-center">
                 <div className="flex flex-col mb-8 md:mb-0">
-                    <h2 className="text-white text-3xl">Welcome Name</h2>
+                    <h2 className="text-white text-3xl">Welcome {user_parsed.username.split(" ")[0]}</h2>
                     <span className="mt-1 text-[#526484]">Welcome to your donation dashboard</span>
                 </div>
                 <div classname="">

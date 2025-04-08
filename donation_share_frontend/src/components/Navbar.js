@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { LuLogOut } from "react-icons/lu";
 
 const Navbar = ({ user }) => {
     const navigate = useNavigate();
@@ -11,21 +12,15 @@ const Navbar = ({ user }) => {
     };
 
     return (
-        <nav className="bg-slate-800 text-white p-4 shadow-lg">
+        <nav className="container mx-auto md:px-22 bg-[#18212d] text-white p-4 shadow-lg">
             <div className="container mx-auto flex justify-between items-center">
                 {/* Logo */}
-                <h1 className="text-2xl font-bold cursor-pointer" onClick={() => navigate("/")}>
-                    Home
+                <h1 className="text-2xl text-[#FF3008] font-bold cursor-pointer" onClick={() => navigate("/")}>
+                    DonorPoint
                 </h1>
                 <div className="">
-                    <span className="text-sm pr-5">Hello, {user_parsed.username}</span>
                     {/* Logout Button */}
-                    <button
-                        onClick={handleLogout}
-                        className="cursor-pointer outline border-white px-2 py-1 rounded-lg hover:bg-slate-900 transition"
-                    >
-                        Logout
-                    </button>
+                    <LuLogOut className="cursor-pointer" onClick={handleLogout} size={22} />
                 </div>
             </div>
         </nav>

@@ -40,23 +40,22 @@ gemini_key = os.getenv("GEMINI_API_KEY")
 gemini_url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}'
 
 
-
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
     name = data.get("name")   # from React input
     email = data.get("email")
     password = data.get("password")
-    account_type = data.get("type", "user")
+    print(name, email, password)
 
     if not name or not email or not password:
         return jsonify({"error": "All fields are required"}), 400
 
-    check_sql = text("SELECT id FROM users WHERE email = :email")
+    check_sql = text("SELECT email FROM users WHERE email = :email")
     insert_sql = text("""
-        INSERT INTO users (email, username, password, type)
-        VALUES (:email, :username, :password, :type)
-        RETURNING id, username, email, type
+        INSERT INTO users (email, username, password)
+        VALUES (:email, :username, :password)
+        RETURNING email, username, email
     """)
 
     with engine.connect() as conn:
@@ -70,21 +69,19 @@ def register():
                 "email": email,
                 "username": name,
                 "password": hashed_pw,
-                "type": account_type
             })
             user = result.fetchone()
             conn.commit()
             return jsonify({
                 "message": "Registration successful",
                 "user": {
-                    "id": user[0],
-                    "username": user[1],
-                    "email": user[2],
-                    "type": user[3]
+                    "username": user[0],
+                    "email": user[1],
                 }
             }), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -95,23 +92,26 @@ def login():
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
 
-    sql = text("SELECT id, username, email, password FROM users WHERE email = :email")
+    sql = text(
+        "SELECT username, email, password FROM users WHERE email = :email")
 
     with engine.connect() as conn:
         user = conn.execute(sql, {"email": email}).fetchone()
-        if user and check_password_hash(user[3], password):
+        print(user)
+        if user and check_password_hash(user[2], password):
             token = create_access_token(identity=email)
+            print(user[0], user[1], user[2])
             return jsonify({
                 "message": "Login successful",
                 "user": {
-                    "id": user[0],
-                    "username": user[1],
-                    "email": user[2],
+                    "username": user[0],
+                    "email": user[1],
                     "access_token": token
                 }
             }), 200
 
     return jsonify({"error": "Invalid credentials"}), 401
+
 
 @app.route("/donations", methods=["POST"])
 @jwt_required()
@@ -146,6 +146,7 @@ def create_donation():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+
 @app.route("/donations", methods=["GET"])
 @jwt_required()
 def get_all_donations():
@@ -154,6 +155,7 @@ def get_all_donations():
         result = conn.execute(sql).fetchall()
         donations = [dict(row._mapping) for row in result]
         return jsonify(donations), 200
+
 
 @app.route("/donations/<int:donation_id>", methods=["GET"])
 @jwt_required()
@@ -164,6 +166,7 @@ def get_single_donation(donation_id):
         if row:
             return jsonify(dict(row._mapping)), 200
         return jsonify({"error": "Donation not found"}), 404
+
 
 @app.route("/donations/<int:donation_id>", methods=["PUT"])
 @jwt_required()
@@ -196,6 +199,7 @@ def update_donation(donation_id):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+
 @app.route("/donations/<int:donation_id>", methods=["DELETE"])
 @jwt_required()
 def delete_donation(donation_id):
@@ -208,7 +212,8 @@ def delete_donation(donation_id):
             return jsonify({"message": "Donation deleted"}), 200
         else:
             return jsonify({"error": "Donation not found"}), 404
-        
+
+
 @app.route("/receivers", methods=["POST"])
 @jwt_required()
 def create_receiver():
@@ -251,6 +256,7 @@ def get_all_receivers():
         receivers = [dict(row._mapping) for row in result]
         return jsonify(receivers), 200
 
+
 @app.route("/receivers/<int:receiver_id>", methods=["GET"])
 @jwt_required()
 def get_receiver(receiver_id):
@@ -260,6 +266,7 @@ def get_receiver(receiver_id):
         if row:
             return jsonify(dict(row._mapping)), 200
         return jsonify({"error": "Receiver not found"}), 404
+
 
 @app.route("/receivers/<int:receiver_id>", methods=["PUT"])
 @jwt_required()
@@ -288,6 +295,7 @@ def update_receiver(receiver_id):
             return jsonify({"error": "Receiver not found"}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
 
 @app.route("/receivers/<int:receiver_id>", methods=["DELETE"])
 @jwt_required()
