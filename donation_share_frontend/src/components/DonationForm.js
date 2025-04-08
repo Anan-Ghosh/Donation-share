@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
+import { postData, toastConfig } from "./api_functions";
+import { toast } from "react-toastify";
 
 const customStyles = {
     content: {
@@ -18,14 +20,20 @@ const customStyles = {
     },
 };
 
-const DonationForm = ({ modalIsOpen, setIsOpen }) => {
-    const [formData, setFormData] = useState({
-        title: "",
-        location: "",
-        type: "",
-        pickupTime: "",
-        description: "",
-    });
+let initial_form = {
+    title: "",
+    location: "",
+    type: "",
+    pickupTime: "",
+    description: "",
+};
+
+const DonationForm = ({ modalIsOpen, setIsOpen, donor }) => {
+    const [formData, setFormData] = useState(initial_form);
+
+    const closeModal = () => {
+        setIsOpen(false);
+    };
 
     const handleChange = (e) => {
         setFormData({
@@ -36,12 +44,15 @@ const DonationForm = ({ modalIsOpen, setIsOpen }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Form submitted:", formData);
-        // Add your logic here (send to backend, reset, etc.)
-    };
-
-    const closeModal = () => {
-        setIsOpen(false);
+        const data = { ...formData, donor: donor };
+        console.log(data);
+        postData("/donations", data)
+            .then((res) => toast("Donation request added successfully", toastConfig))
+            .catch((err) => {
+                toast.error("Donation request error", toastConfig);
+            });
+        setFormData(initial_form);
+        closeModal();
     };
 
     return (

@@ -47,7 +47,7 @@ const Home = () => {
                     </button>
                 </div>
             </div>
-            <DonationForm modalIsOpen={modalIsOpen} setIsOpen={setIsOpen} />
+            <DonationForm modalIsOpen={modalIsOpen} setIsOpen={setIsOpen} donor={user_parsed.email} />
             <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 lg:grid-cols-4 gap-4 my-14">
                 <DataCard number={56} title={"Number of Donations"} color={"#09c2de"}>
                     {" "}

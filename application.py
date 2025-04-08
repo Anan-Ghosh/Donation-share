@@ -1,4 +1,7 @@
 import os
+import random
+import requests
+import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token
@@ -113,32 +116,65 @@ def login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 
+def geocode_address(address):
+
+    if not address:
+        return jsonify({'error': 'Address is required'}), 400
+
+    api_key = os.getenv('OPENCAGE_API_KEY')
+    url = f'https://api.opencagedata.com/geocode/v1/json?q={address}&key={api_key}'
+
+    try:
+        response = requests.get(url)
+        results = response.json().get('results')
+
+        if not results:
+            return jsonify({'error': 'No results found'}), 404
+
+        coords = results[0]['geometry']
+        print(coords)
+        return json.dumps({
+            'location': [coords['lat'], coords['lng']],
+            'address': address
+        })
+
+    except Exception as e:
+        print(e)
+        return jsonify({'error': 'Geocoding failed', 'details': str(e)}), 500
+
+
 @app.route("/donations", methods=["POST"])
-@jwt_required()
 def create_donation():
     data = request.get_json()
-    user_email = get_jwt_identity()
+    donation_id = random.randint(100000, 999999)
+    location = geocode_address(data.get("location"))
 
-    get_user_sql = text("SELECT id FROM users WHERE email = :email")
+    print(location)
+
+    get_user_sql = text("SELECT email FROM users WHERE email = :email")
     insert_sql = text("""
-        INSERT INTO donations (user_id, name, title, location, description, pickup_time)
-        VALUES (:user_id, :name, :title, :location, :description, :pickup_time)
-        RETURNING donation_id, user_id, name, title, location, description, pickup_time
+        INSERT INTO donations (donor, donation_id, type, title, location, description, pickup_time, is_booked, is_completed)
+        VALUES (:donor, :donation_id, :type, :title, :location, :description, :pickup_time, :is_booked, :is_completed)
+        RETURNING donor, donation_id, type, title, location, description, pickup_time, is_booked, is_completed
     """)
-
+    '''Only add receiver once it is booked by them, so receiver is optional field'''
     with engine.connect() as conn:
-        user = conn.execute(get_user_sql, {"email": user_email}).fetchone()
+        user = conn.execute(
+            get_user_sql, {"email": data.get("donor")}).fetchone()
         if not user:
             return jsonify({"error": "User not found"}), 404
 
         try:
             result = conn.execute(insert_sql, {
-                "user_id": user[0],
-                "name": data.get("name"),
+                "donor": data.get("donor"),
+                "donation_id": donation_id,
+                "type": data.get("type"),
                 "title": data.get("title"),
-                "location": data.get("location"),
+                "location": location,
                 "description": data.get("description"),
                 "pickup_time": data.get("pickupTime"),
+                "is_booked": False,
+                "is_completed": False
             })
             donation = result.fetchone()
             conn.commit()
