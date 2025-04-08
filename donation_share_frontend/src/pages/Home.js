@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DataCard from "../components/DataCard";
 import Provider from "../components/Provider";
 
@@ -10,11 +10,23 @@ import { FaSmile } from "react-icons/fa";
 import LineChart from "../components/Chart";
 import Map from "../components/Map";
 import DonationForm from "../components/DonationForm";
+import { getData } from "../components/api_functions";
 
 const Home = () => {
     const [modalIsOpen, setIsOpen] = useState(false);
+    const [donations, setDonation] = useState([]);
+    const [userData, setUserData] = useState(0);
     let user = localStorage.getItem("user");
     const user_parsed = JSON.parse(user);
+
+    useEffect(() => {
+        getData("/donations")
+            .then((res) => setDonation(res))
+            .catch((err) => console.log(err));
+        getData("/users")
+            .then((res) => setUserData(res))
+            .catch((err) => console.log(err));
+    }, []);
 
     const scrollToMap = () => {
         window.scroll({
@@ -49,11 +61,11 @@ const Home = () => {
             </div>
             <DonationForm modalIsOpen={modalIsOpen} setIsOpen={setIsOpen} donor={user_parsed.email} />
             <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 lg:grid-cols-4 gap-4 my-14">
-                <DataCard number={56} title={"Number of Donations"} color={"#09c2de"}>
+                <DataCard number={donations ? donations.length : 0} title={"Number of Donations"} color={"#09c2de"}>
                     {" "}
                     <FaHandHoldingHeart size={85} className="relative top-1 left-0" />
                 </DataCard>
-                <DataCard number={56} title={"Total Users"} color={"#e85347"}>
+                <DataCard number={userData} title={"Total Users"} color={"#e85347"}>
                     <MdAccountCircle size={85} className="relative top-5 left-5" />
                 </DataCard>
                 <DataCard number={56} title={"Average Rating"} color={"#f4bd0e"}>
@@ -80,7 +92,7 @@ const Home = () => {
                 </div>
             </div>
             <div id="map" className="mt-12 rounded-xl overflow-hidden border border-[#18212d] w-full h-180">
-                <Map />
+                {donations.length > 0 && <Map data={donations} />}
             </div>
         </div>
     );

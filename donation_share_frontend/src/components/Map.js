@@ -2,7 +2,12 @@ import React, { useRef } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 
-const BeepingMarker = ({ position }) => {
+const BeepingMarker = ({ donation }) => {
+    let title = donation.title;
+    let location = JSON.parse(donation.location);
+    let type = donation.type;
+    let isBooked = donation.is_booked;
+
     const markerRef = useRef();
     const availableDonationIcon = L.divIcon({
         className: "",
@@ -28,15 +33,24 @@ const BeepingMarker = ({ position }) => {
     };
 
     return (
-        <Marker position={position} icon={bookedDonationIcon} ref={markerRef} eventHandlers={eventHandlers}>
+        <Marker
+            position={location.location}
+            icon={isBooked ? bookedDonationIcon : availableDonationIcon}
+            ref={markerRef}
+            eventHandlers={eventHandlers}
+        >
             <Popup closeButton={false} autoPan={false}>
-                This is Popup
+                <div className="flex flex-col">
+                    <span>Title : {title}</span>
+                    <span>Donation Type : {type}</span>
+                    <span>Pickup Address : {location.address}</span>
+                </div>
             </Popup>
         </Marker>
     );
 };
 
-const Map = () => {
+const Map = ({ data }) => {
     return (
         <MapContainer
             center={[51.05, -114.07]}
@@ -48,7 +62,7 @@ const Map = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <BeepingMarker position={[51.05, -114.07]} />
+            {data && data.map((item) => <BeepingMarker donation={item} />)}
         </MapContainer>
     );
 };

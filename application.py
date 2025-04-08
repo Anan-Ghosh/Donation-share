@@ -116,6 +116,15 @@ def login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 
+@app.route("/users", methods=["GET"])
+def get_number_of_users():
+    sql = text("SELECT * FROM users")
+    with engine.connect() as conn:
+        result = conn.execute(sql).fetchall()
+        num_users = len([dict(row._mapping) for row in result])
+        return jsonify(num_users), 200
+
+
 def geocode_address(address):
 
     if not address:
@@ -184,9 +193,8 @@ def create_donation():
 
 
 @app.route("/donations", methods=["GET"])
-@jwt_required()
 def get_all_donations():
-    sql = text("SELECT * FROM donations ORDER BY pickup_time DESC")
+    sql = text("SELECT * FROM donations")
     with engine.connect() as conn:
         result = conn.execute(sql).fetchall()
         donations = [dict(row._mapping) for row in result]
