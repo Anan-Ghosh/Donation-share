@@ -14,7 +14,7 @@ function App() {
                 <Route path="/auth" element={<AuthPage />} />
                 <Route element={<PrivateRoute />}>
                     <Route path="/" element={<Home />} />
-                    <Route path="/donation" element={<DonationDetail />} />
+                    <Route path="/donation/:id" element={<DonationDetail />} />
                 </Route>
             </Routes>
             <ToastContainer />

@@ -201,8 +201,7 @@ def get_all_donations():
         return jsonify(donations), 200
 
 
-@app.route("/donations/<int:donation_id>", methods=["GET"])
-@jwt_required()
+@app.route("/donations/<donation_id>", methods=["GET"])
 def get_single_donation(donation_id):
     sql = text("SELECT * FROM donations WHERE donation_id = :id")
     with engine.connect() as conn:
@@ -213,7 +212,6 @@ def get_single_donation(donation_id):
 
 
 @app.route("/donations/<int:donation_id>", methods=["PUT"])
-@jwt_required()
 def update_donation(donation_id):
     data = request.get_json()
     sql = text("""

@@ -50,27 +50,11 @@ const Routing = ({ currentLocation, destination }) => {
     return null;
 };
 
-const RouteMap = () => {
-    const [currentLocation, setCurrentLocation] = useState(null);
-
-    // Set your desired destination
+const RouteMap = ({ pickupLocation, currentLocation }) => {
     const destination = {
-        lat: 53.5461, // Example: Edmonton
-        lng: -113.4938,
+        lat: pickupLocation[0],
+        lng: pickupLocation[1],
     };
-
-    useEffect(() => {
-        navigator.geolocation.watchPosition(
-            (position) => {
-                setCurrentLocation({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                });
-            },
-            (err) => console.error(err),
-            { enableHighAccuracy: true },
-        );
-    }, []);
 
     const availableDonationIcon = L.divIcon({
         className: "",
@@ -86,7 +70,7 @@ const RouteMap = () => {
             <Routing currentLocation={currentLocation} destination={destination} />
         </MapContainer>
     ) : (
-        <p>Getting location...</p>
+        <p className="flex text-white justify-center items-center">Getting location...</p>
     );
 };
 

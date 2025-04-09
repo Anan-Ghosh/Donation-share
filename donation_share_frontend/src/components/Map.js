@@ -1,12 +1,16 @@
 import React, { useRef } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useNavigate } from "react-router-dom";
 
 const BeepingMarker = ({ donation }) => {
+    const navigate = useNavigate();
+
     let title = donation.title;
     let location = JSON.parse(donation.location);
     let type = donation.type;
     let isBooked = donation.is_booked;
+    let donationId = donation.donation_id;
 
     const markerRef = useRef();
     const availableDonationIcon = L.divIcon({
@@ -29,6 +33,9 @@ const BeepingMarker = ({ donation }) => {
         },
         mouseout: () => {
             markerRef.current?.closePopup();
+        },
+        click: () => {
+            navigate(`/donation/${donationId}`);
         },
     };
 
