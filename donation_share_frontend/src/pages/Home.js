@@ -10,6 +10,7 @@ import Map from "../components/Map";
 import DonationForm from "../components/DonationForm";
 import { getData } from "../components/api_functions";
 import ReceiverTable from "../components/ReceiverTable";
+import SignificanceTable from "../components/SignificanceTable";
 
 const Home = () => {
     const [modalIsOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ const Home = () => {
     const [beneficiaryData, setBeneficiaryData] = useState(0);
     const [userActivity, setUserActivity] = useState([]);
     const [topDonors, setTopDonors] = useState([]);
+    const [highDemand, setHighDemand] = useState();
     let user = localStorage.getItem("user");
     const user_parsed = JSON.parse(user);
 
@@ -37,6 +39,9 @@ const Home = () => {
         getData("/top_donors")
             .then((res) => setTopDonors(res))
             .catch((err) => console.log(err));
+        getData("/analyze_quadrants")
+            .then((res) => setHighDemand(JSON.parse(res.result)))
+            .catch((err) => console.log(err));
     }, []);
 
     const scrollToMap = () => {
@@ -45,6 +50,8 @@ const Home = () => {
             behavior: "smooth",
         });
     };
+
+    console.log(highDemand);
 
     return (
         <div className="container mx-auto md:px-22 my-12">
@@ -97,6 +104,7 @@ const Home = () => {
                     </div>
                 </div>
             </div>
+            <div className="my-6">{highDemand && <SignificanceTable data={highDemand} />}</div>
             <div id="map" className="mt-12 rounded-xl overflow-hidden border border-[#18212d] w-full h-180">
                 {donations.length > 0 && <Map data={donations} />}
             </div>

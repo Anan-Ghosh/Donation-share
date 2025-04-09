@@ -6,8 +6,6 @@ import { useNavigate } from "react-router-dom";
 const BeepingMarker = ({ donation }) => {
     const navigate = useNavigate();
 
-    console.log(donation);
-
     let title = donation.title;
     let location = JSON.parse(donation.location);
     let type = donation.type;

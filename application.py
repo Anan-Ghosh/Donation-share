@@ -353,8 +353,7 @@ def analyze_quadrants():
             loc_dict = json.loads(loc_str)  # Convert string to dict
             coordinates.append(loc_dict["location"])
 
-    center = data["center"]  # e.g. {"lat": 51.05, "lon": -114.07}
-    # List of {"lat": ..., "lon": ..., "value": ...}
+    center = data["center"]
 
     client = genai.Client(api_key=gemini_key)
 
@@ -364,7 +363,9 @@ def analyze_quadrants():
     # Ask Gemini
     response = client.models.generate_content(
         model="gemini-1.5-flash", contents=prompt)
-    return jsonify({"result": response.text})
+    cleaned = response.text.replace("```json", "").replace("```", "").strip()
+
+    return jsonify({"result": cleaned})
 
 # Create prompt dynamically
 
@@ -388,26 +389,22 @@ def generate_prompt(center, coordinates):
             1. Assign each point to a quadrant.
             2. Count how many points fall in each quadrant.
             3. Rank the quadrants based on count.
-            4. If 'value' is provided, compute the average per quadrant and rank based on average value.
+            4. Generate a 10 point significance value for each quadrant and attach it to the a value.
+            5. I do not need an explanation, just the json object as result
 
-            Respond with a JSON summary like this:
+            Respond with a  in the format:
+            
             {{
-            "counts": {{
-                "NE": 10,
-                "NW": 5,
-                "SW": 7,
-                "SE": 8
-            }},
-            "rank_by_count": ["NE", "SE", "SW", "NW"],
-            "average_value": {{
-                "NE": 23.5,
-                "NW": 18.2,
-                "SW": 19.7,
-                "SE": 21.1
-            }},
-            "rank_by_value": ["NE", "SE", "SW", "NW"]
+                "counts": {{
+                    "NE": 10,
+                    "NW": 5,
+                    "SW": 7,
+                    "SE": 8
+                }},
+                "rank_by_count": ["NE", "SE", "SW", "NW"],
             }}
-                """
+
+            """
 
 
 @app.route("/donations/<int:donation_id>", methods=["PUT"])
