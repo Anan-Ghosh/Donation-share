@@ -6,10 +6,13 @@ import { useNavigate } from "react-router-dom";
 const BeepingMarker = ({ donation }) => {
     const navigate = useNavigate();
 
+    console.log(donation);
+
     let title = donation.title;
     let location = JSON.parse(donation.location);
     let type = donation.type;
     let isBooked = donation.is_booked;
+    let isCompleted = donation.is_completed;
     let donationId = donation.donation_id;
 
     const markerRef = useRef();
@@ -23,6 +26,13 @@ const BeepingMarker = ({ donation }) => {
     const bookedDonationIcon = L.divIcon({
         className: "",
         html: `<div class="booked_donation"></div>`,
+        iconSize: [10, 10],
+        iconAnchor: [10, 10],
+    });
+
+    const completedDonationIcon = L.divIcon({
+        className: "",
+        html: `<div class="completed_donation"></div>`,
         iconSize: [10, 10],
         iconAnchor: [10, 10],
     });
@@ -42,7 +52,7 @@ const BeepingMarker = ({ donation }) => {
     return (
         <Marker
             position={location.location}
-            icon={isBooked ? bookedDonationIcon : availableDonationIcon}
+            icon={isCompleted ? bookedDonationIcon : isBooked ? completedDonationIcon : availableDonationIcon}
             ref={markerRef}
             eventHandlers={eventHandlers}
         >
@@ -51,6 +61,7 @@ const BeepingMarker = ({ donation }) => {
                     <span>Title : {title}</span>
                     <span>Donation Type : {type}</span>
                     <span>Pickup Address : {location.address}</span>
+                    <span>Status : {isCompleted ? "Completed" : isBooked ? "Booked" : "Available"}</span>
                 </div>
             </Popup>
         </Marker>

@@ -10,6 +10,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from google import genai
+
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -328,6 +330,84 @@ def completed_donation(donation_id):
             return jsonify(dict(donation._mapping)), 201
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+
+@app.route("/analyze_quadrants", methods=["GET"])
+def analyze_quadrants():
+    data = {
+        "center": {
+            "lat": 51.05, "lon": -114.07
+        }
+    }
+
+    sql = text("SELECT location FROM donations")
+    with engine.connect() as conn:
+        result = conn.execute(sql).fetchall()
+        donations = [dict(row._mapping) for row in result]
+
+        # Extract coordinate arrays
+        coordinates = []
+
+        for item in donations:
+            loc_str = item["location"]
+            loc_dict = json.loads(loc_str)  # Convert string to dict
+            coordinates.append(loc_dict["location"])
+
+    center = data["center"]  # e.g. {"lat": 51.05, "lon": -114.07}
+    # List of {"lat": ..., "lon": ..., "value": ...}
+
+    client = genai.Client(api_key=gemini_key)
+
+    # Generate a smart prompt
+    prompt = generate_prompt(center, coordinates)
+
+    # Ask Gemini
+    response = client.models.generate_content(
+        model="gemini-1.5-flash", contents=prompt)
+    return jsonify({"result": response.text})
+
+# Create prompt dynamically
+
+
+def generate_prompt(center, coordinates):
+    return f"""
+            You are a geospatial data analyst. Here's the task:
+
+            **Center point**: lat={center['lat']}, lon={center['lon']}
+
+            Define 4 quadrants:
+            - NE: lat > {center['lat']}, lon > {center['lon']}
+            - NW: lat > {center['lat']}, lon < {center['lon']}
+            - SW: lat < {center['lat']}, lon < {center['lon']}
+            - SE: lat < {center['lat']}, lon > {center['lon']}
+
+            Here are the data points:
+            {coordinates}
+
+            Instructions:
+            1. Assign each point to a quadrant.
+            2. Count how many points fall in each quadrant.
+            3. Rank the quadrants based on count.
+            4. If 'value' is provided, compute the average per quadrant and rank based on average value.
+
+            Respond with a JSON summary like this:
+            {{
+            "counts": {{
+                "NE": 10,
+                "NW": 5,
+                "SW": 7,
+                "SE": 8
+            }},
+            "rank_by_count": ["NE", "SE", "SW", "NW"],
+            "average_value": {{
+                "NE": 23.5,
+                "NW": 18.2,
+                "SW": 19.7,
+                "SE": 21.1
+            }},
+            "rank_by_value": ["NE", "SE", "SW", "NW"]
+            }}
+                """
 
 
 @app.route("/donations/<int:donation_id>", methods=["PUT"])

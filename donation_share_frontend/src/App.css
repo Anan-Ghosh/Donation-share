@@ -40,6 +40,13 @@ body {
     background: blue;
     border-radius: 50%;
 }
+.completed_donation {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    background: #1ee0ac;
+    border-radius: 50%;
+}
 
 @keyframes pulse-beat {
     0% {
