@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { MdBookmark } from "react-icons/md";
 import RouteMap from "../components/RouteMap";
-import { getData } from "../components/api_functions";
+import { getData, postData, toastConfig } from "../components/api_functions";
 import * as turf from "@turf/turf";
+import { toast } from "react-toastify";
 
 const DonationDetail = () => {
     const [donation, setDonation] = useState();
@@ -10,6 +11,8 @@ const DonationDetail = () => {
 
     const path = window.location.pathname.split("/");
     const donationId = path[path.length - 1];
+    let user = localStorage.getItem("user");
+    const user_parsed = JSON.parse(user);
 
     useEffect(() => {
         // Get Donation Data
@@ -41,6 +44,17 @@ const DonationDetail = () => {
         return distance.toFixed(2);
     };
 
+    const bookDonation = () => {
+        postData(`/book/${donationId}`, {
+            receiver: user_parsed.email,
+        })
+            .then((res) => {
+                setDonation(res);
+                toast("Donation successfully booked");
+            })
+            .catch((err) => toast.error("Error in booking", toastConfig));
+    };
+
     return (
         <div className="container mx-auto md:px-22 my-12">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -49,11 +63,20 @@ const DonationDetail = () => {
                     <span className="mt-1 text-[#526484]">Details for the donations presented below</span>
                 </div>
                 <div classname="">
-                    <button className="cursor-pointer rounded bg-[#18212d] px-6 p-1 text-[#526484] hover:bg-white hover:text-black transition mx-5 border border-[#526484]">
-                        <div className="flex flex-row items-center ">
-                            <MdBookmark /> <span className="ml-2">Book</span>
+                    {donation && !donation.is_booked ? (
+                        <button
+                            onClick={() => bookDonation()}
+                            className="cursor-pointer rounded bg-[#18212d] px-6 p-1 text-[#526484] hover:bg-white hover:text-black transition mx-5 border border-[#526484]"
+                        >
+                            <div className="flex flex-row items-center">
+                                <MdBookmark /> <span className="ml-2">Book</span>
+                            </div>
+                        </button>
+                    ) : (
+                        <div className="rounded bg-[#18212d] px-6 p-1 text-[#526484] hover:bg-white hover:text-black transition mx-5 border border-[#526484]">
+                            <p>This donation has been booked</p>
                         </div>
-                    </button>
+                    )}
                 </div>
             </div>
             <div className="relative w-full flex justify-center items-center py-10">

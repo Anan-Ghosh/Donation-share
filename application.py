@@ -125,6 +125,15 @@ def get_number_of_users():
         return jsonify(num_users), 200
 
 
+@app.route("/receivers", methods=["GET"])
+def get_number_of_receivers():
+    sql = text("SELECT * FROM receiver")
+    with engine.connect() as conn:
+        result = conn.execute(sql).fetchall()
+        num_users = len([dict(row._mapping) for row in result])
+        return jsonify(num_users), 200
+
+
 def geocode_address(address):
 
     if not address:
@@ -141,7 +150,7 @@ def geocode_address(address):
             return jsonify({'error': 'No results found'}), 404
 
         coords = results[0]['geometry']
-        print(coords)
+
         return json.dumps({
             'location': [coords['lat'], coords['lng']],
             'address': address
@@ -158,15 +167,13 @@ def create_donation():
     donation_id = random.randint(100000, 999999)
     location = geocode_address(data.get("location"))
 
-    print(location)
-
     get_user_sql = text("SELECT email FROM users WHERE email = :email")
     insert_sql = text("""
         INSERT INTO donations (donor, donation_id, type, title, location, description, pickup_time, is_booked, is_completed)
         VALUES (:donor, :donation_id, :type, :title, :location, :description, :pickup_time, :is_booked, :is_completed)
         RETURNING donor, donation_id, type, title, location, description, pickup_time, is_booked, is_completed
     """)
-    '''Only add receiver once it is booked by them, so receiver is optional field'''
+
     with engine.connect() as conn:
         user = conn.execute(
             get_user_sql, {"email": data.get("donor")}).fetchone()
@@ -209,6 +216,118 @@ def get_single_donation(donation_id):
         if row:
             return jsonify(dict(row._mapping)), 200
         return jsonify({"error": "Donation not found"}), 404
+
+
+@app.route("/user_activity/<receiver>", methods=["GET"])
+def get_user_activity(receiver):
+    sql = text("""
+        SELECT * from receiver
+        WHERE receiver = :receiver
+    """)
+    with engine.connect() as conn:
+        result = conn.execute(sql, {"receiver": receiver}).fetchall()
+        donations = [dict(row._mapping) for row in result]
+        return jsonify(donations), 200
+
+
+@app.route("/top_donors", methods=["GET"])
+def get_top_donors():
+    sql = text("""
+        SELECT 
+        u.username,
+        u.email,
+        COUNT(d.donation_id) AS donation_count
+        FROM donations d
+        JOIN "users" u ON d.donor = u.email
+        GROUP BY u.username, u.email
+        ORDER BY donation_count DESC
+        LIMIT 5
+
+    """)
+    with engine.connect() as conn:
+        result = conn.execute(sql).fetchall()
+        donations = [dict(row._mapping) for row in result]
+        return jsonify(donations), 200
+
+
+@app.route("/book/<donation_id>", methods=["POST"])
+def book_donation(donation_id):
+    data = request.get_json()
+    sql = text("""
+        UPDATE donations
+        SET is_booked = :is_booked
+        WHERE donation_id = :id
+        RETURNING *
+    """)
+    sql_new_receiver = text("""
+        INSERT INTO receiver (receiver, donation_id, is_completed, rating)
+        VALUES (:receiver, :donation_id, :is_completed, :rating)
+    """)
+
+    with engine.connect() as conn:
+        try:
+            # Turning booking to true
+            result_booked = conn.execute(sql, {
+                "id": donation_id,
+                "is_booked": True,
+            })
+
+            # Adding receiver data to a new table
+            conn.execute(sql_new_receiver, {
+                "receiver": data.get("receiver"),
+                "donation_id": donation_id,
+                "is_completed": False,
+                "rating": 0
+            })
+
+            donation = result_booked.fetchone()
+
+            conn.commit()
+
+            return jsonify(dict(donation._mapping)), 201
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
+@app.route("/complete/<donation_id>", methods=["POST"])
+def completed_donation(donation_id):
+    data = request.get_json()
+    update_donation_sql = text("""
+        UPDATE donations
+        SET is_completed = :is_completed
+        WHERE donation_id = :id
+        RETURNING *
+    """)
+
+    update_receiver_sql = text("""
+        UPDATE receiver
+        SET is_completed = :is_completed
+        WHERE donation_id = :id AND receiver = :receiver
+        RETURNING *
+    """)
+
+    with engine.connect() as conn:
+        try:
+            # Turning booking to true
+            result_donation_completed = conn.execute(update_donation_sql, {
+                "id": donation_id,
+                "is_completed": True,
+            })
+
+            # Adding receiver data to a new table
+            conn.execute(update_receiver_sql, {
+                "receiver": data.get("receiver"),
+                "id": donation_id,
+                "is_completed": True,
+            })
+
+            donation = result_donation_completed.fetchone()
+
+            conn.commit()
+
+            return jsonify(dict(donation._mapping)), 201
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 
 @app.route("/donations/<int:donation_id>", methods=["PUT"])

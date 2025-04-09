@@ -5,17 +5,19 @@ import Provider from "../components/Provider";
 import { FaPlus } from "react-icons/fa";
 import { MdAccountCircle } from "react-icons/md";
 import { FaHandHoldingHeart } from "react-icons/fa";
-import { FaStar } from "react-icons/fa";
 import { FaSmile } from "react-icons/fa";
-import LineChart from "../components/Chart";
 import Map from "../components/Map";
 import DonationForm from "../components/DonationForm";
 import { getData } from "../components/api_functions";
+import ReceiverTable from "../components/ReceiverTable";
 
 const Home = () => {
     const [modalIsOpen, setIsOpen] = useState(false);
     const [donations, setDonation] = useState([]);
     const [userData, setUserData] = useState(0);
+    const [beneficiaryData, setBeneficiaryData] = useState(0);
+    const [userActivity, setUserActivity] = useState([]);
+    const [topDonors, setTopDonors] = useState([]);
     let user = localStorage.getItem("user");
     const user_parsed = JSON.parse(user);
 
@@ -25,6 +27,15 @@ const Home = () => {
             .catch((err) => console.log(err));
         getData("/users")
             .then((res) => setUserData(res))
+            .catch((err) => console.log(err));
+        getData("/receivers")
+            .then((res) => setBeneficiaryData(res))
+            .catch((err) => console.log(err));
+        getData(`/user_activity/${user_parsed.email}`)
+            .then((res) => setUserActivity(res))
+            .catch((err) => console.log(err));
+        getData("/top_donors")
+            .then((res) => setTopDonors(res))
             .catch((err) => console.log(err));
     }, []);
 
@@ -60,7 +71,7 @@ const Home = () => {
                 </div>
             </div>
             <DonationForm modalIsOpen={modalIsOpen} setIsOpen={setIsOpen} donor={user_parsed.email} />
-            <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 lg:grid-cols-4 gap-4 my-14">
+            <div className="grid grid-cols-1 place-items-center sm:grid-cols-2 lg:grid-cols-3 gap-4 my-14">
                 <DataCard number={donations ? donations.length : 0} title={"Number of Donations"} color={"#09c2de"}>
                     {" "}
                     <FaHandHoldingHeart size={85} className="relative top-1 left-0" />
@@ -68,26 +79,21 @@ const Home = () => {
                 <DataCard number={userData} title={"Total Users"} color={"#e85347"}>
                     <MdAccountCircle size={85} className="relative top-5 left-5" />
                 </DataCard>
-                <DataCard number={56} title={"Average Rating"} color={"#f4bd0e"}>
-                    <FaStar size={85} className="relative top-5 left-5" />
-                </DataCard>
-                <DataCard number={56} title={"Number of Beneficiaries"} color={"#1ee0ac"}>
+                <DataCard number={beneficiaryData} title={"Number of Beneficiaries"} color={"#1ee0ac"}>
                     {" "}
                     <FaSmile size={85} className="relative top-5 left-5" />
                 </DataCard>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                    <LineChart />
+                    <ReceiverTable data={userActivity} user={user_parsed.email} />
                 </div>
                 <div className="flex flex-col rounded-xl p-6 bg-[#18212d]">
                     <h2 className="text-white text-xl mb-4">Top Providers</h2>
                     <div className="flex flex-col divide-y divide-[#526484]">
-                        <Provider name={"Alicia"} email={"alicia@gmail.com"} donationNo={5} />
-                        <Provider name={"Darlee"} email={"alicia@gmail.com"} donationNo={5} />
-                        <Provider name={"Shahnila"} email={"alicia@gmail.com"} donationNo={5} />
-                        <Provider name={"Mandy"} email={"alicia@gmail.com"} donationNo={5} />
-                        <Provider name={"Audri"} email={"alicia@gmail.com"} donationNo={5} />
+                        {topDonors.map((item) => (
+                            <Provider name={item.username} email={item.email} donationNo={item.donation_count} />
+                        ))}
                     </div>
                 </div>
             </div>
