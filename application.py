@@ -262,8 +262,8 @@ def book_donation(donation_id):
         RETURNING *
     """)
     sql_new_receiver = text("""
-        INSERT INTO receiver (receiver, donation_id, is_completed, rating)
-        VALUES (:receiver, :donation_id, :is_completed, :rating)
+        INSERT INTO receiver (receiver, donation_id, is_completed)
+        VALUES (:receiver, :donation_id, :is_completed)
     """)
 
     with engine.connect() as conn:
@@ -279,7 +279,6 @@ def book_donation(donation_id):
                 "receiver": data.get("receiver"),
                 "donation_id": donation_id,
                 "is_completed": False,
-                "rating": 0
             })
 
             donation = result_booked.fetchone()
@@ -378,9 +377,9 @@ def generate_prompt(center, coordinates):
 
             Define 4 quadrants:
             - NE: lat > {center['lat']}, lon > {center['lon']}
-            - NW: lat > {center['lat']}, lon < {center['lon']}
+            - SE: lat > {center['lat']}, lon < {center['lon']}
             - SW: lat < {center['lat']}, lon < {center['lon']}
-            - SE: lat < {center['lat']}, lon > {center['lon']}
+            - NW: lat < {center['lat']}, lon > {center['lon']}
 
             Here are the data points:
             {coordinates}
@@ -389,7 +388,7 @@ def generate_prompt(center, coordinates):
             1. Assign each point to a quadrant.
             2. Count how many points fall in each quadrant.
             3. Rank the quadrants based on count.
-            4. Generate a 10 point significance value for each quadrant and attach it to the a value.
+            4. Generate a 10 point significance value for each quadrant and attach it to the a value, such that the totoal of the 4 quadrants must be 10.
             5. I do not need an explanation, just the json object as result
 
             Respond with a  in the format:
@@ -503,48 +502,6 @@ def get_receiver(receiver_id):
         row = conn.execute(sql, {"id": receiver_id}).fetchone()
         if row:
             return jsonify(dict(row._mapping)), 200
-        return jsonify({"error": "Receiver not found"}), 404
-
-
-@app.route("/receivers/<int:receiver_id>", methods=["PUT"])
-@jwt_required()
-def update_receiver(receiver_id):
-    data = request.get_json()
-    sql = text("""
-        UPDATE receivers
-        SET name = :name,
-            location = :location,
-            pickup_time = :pickup_time
-        WHERE receiver_id = :id
-        RETURNING *
-    """)
-    with engine.connect() as conn:
-        try:
-            result = conn.execute(sql, {
-                "id": receiver_id,
-                "name": data.get("name"),
-                "location": data.get("location"),
-                "pickup_time": data.get("pickup_time"),
-            })
-            receiver = result.fetchone()
-            conn.commit()
-            if receiver:
-                return jsonify(dict(receiver._mapping)), 200
-            return jsonify({"error": "Receiver not found"}), 404
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-
-@app.route("/receivers/<int:receiver_id>", methods=["DELETE"])
-@jwt_required()
-def delete_receiver(receiver_id):
-    sql = text("DELETE FROM receivers WHERE receiver_id = :id RETURNING *")
-    with engine.connect() as conn:
-        result = conn.execute(sql, {"id": receiver_id})
-        deleted = result.fetchone()
-        conn.commit()
-        if deleted:
-            return jsonify({"message": "Receiver deleted"}), 200
         return jsonify({"error": "Receiver not found"}), 404
 
 
